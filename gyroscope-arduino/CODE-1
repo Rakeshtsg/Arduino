@@ -1,0 +1,34 @@
+// Import the required libraries
+#include <Wire.h>
+
+// Set the I2C address of the gyroscope
+const int gyroscopeAddress = 0x68;
+
+void setup()
+{
+  // Start the I2C bus
+  Wire.begin();
+}
+
+void loop()
+{
+  // Read the data from the gyroscope
+  Wire.beginTransmission(gyroscopeAddress);
+  Wire.write(0x3B);
+  Wire.endTransmission();
+  Wire.requestFrom(gyroscopeAddress, 6);
+  int gyroX = Wire.read() << 8 | Wire.read();
+  int gyroY = Wire.read() << 8 | Wire.read();
+  int gyroZ = Wire.read() << 8 | Wire.read();
+
+  // Print the data to the serial monitor
+  Serial.print("Gyroscope: X=");
+  Serial.print(gyroX);
+  Serial.print(", Y=");
+  Serial.print(gyroY);
+  Serial.print(", Z=");
+  Serial.println(gyroZ);
+
+  // Delay for a short time
+  delay(500);
+}
