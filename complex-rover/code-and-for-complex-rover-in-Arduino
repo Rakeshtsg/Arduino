@@ -1,0 +1,43 @@
+// Import the required libraries
+#include <Servo.h>
+#include <PID_v1.h>
+#include <Wire.h>
+
+// Set the pins for the motors
+const int leftMotorPin = 2;
+const int rightMotorPin = 3;
+
+// Set the pins for the sensors
+const int gyroscopePin = A0;
+const int accelerometerPin = A1;
+const int altitudeSensorPin = A2;
+const int ultrasonicSensorPin = A3;
+
+// Set the PID constants
+const double Kp = 1.0;
+const double Ki = 0.1;
+const double Kd = 0.1;
+
+// Create the PID controllers
+PID pidX(&gyroscopePin, &accelerometerPin, &leftMotorPin, &rightMotorPin, Kp, Ki, Kd);
+PID pidY(&gyroscopePin, &accelerometerPin, &leftMotorPin, &rightMotorPin, Kp, Ki, Kd);
+PID pidZ(&altitudeSensorPin, NULL, &leftMotorPin, &rightMotorPin, Kp, Ki, Kd);
+
+// Set the maximum speed of the motors
+const int maxSpeed = 200;
+
+// Set the initial direction and speed of the motors
+int leftSpeed = maxSpeed;
+int rightSpeed = maxSpeed;
+
+void setup()
+{
+  // Initialize the PID controllers
+  pidX.SetOutputLimits(-255, 255);
+  pidX.SetMode(AUTOMATIC);
+  pidY.SetOutputLimits(-255, 255);
+  pidY.SetMode(AUTOMATIC);
+  pidZ.SetOutputLimits(-255, 255);
+  pidZ.SetMode(AUTOMATIC);
+
+  // Set the initial direction
