@@ -1,0 +1,55 @@
+// Import the required libraries
+#include <Servo.h>
+
+// Set the pins for the motors
+const int leftMotorPin = 2;
+const int rightMotorPin = 3;
+
+// Set the pin for the vacuum motor
+const int vacuumMotorPin = 5;
+
+// Set the pin for the vacuum sensor
+const int vacuumSensorPin = A0;
+
+// Set the pin for the servo
+const int servoPin = 6;
+
+// Create the servo
+Servo servo;
+
+void setup()
+{
+  // Attach the servo
+  servo.attach(servoPin);
+
+  // Set the initial direction and speed of the motors
+  leftMotorPin = 100;
+  rightMotorPin = 100;
+
+  // Turn on the vacuum motor
+  vacuumMotorPin = 100;
+}
+
+void loop()
+{
+  // Check the vacuum sensor
+  int sensorValue = analogRead(vacuumSensorPin);
+  if (sensorValue > 100)
+  {
+    // Move the servo to the right
+    servo.write(90);
+
+    // Move the robot forward
+    leftMotorPin = 100;
+    rightMotorPin = 100;
+  }
+  else
+  {
+    // Move the servo to the left
+    servo.write(0);
+
+    // Move the robot backward
+    leftMotorPin = -100;
+    rightMotorPin = -100;
+  }
+}

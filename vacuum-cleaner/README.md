@@ -1,0 +1,2 @@
+# automated-vacuum-cleaner-basic
+This program uses a servo to control the direction of the vacuum nozzle, and an infrared sensor to detect the presence of debris. The robot moves forward until the sensor detects debris, in which case it moves the servo to the right and continues moving forward to vacuum up the debris. If no debris is detected, the servo is moved to the left and the robot moves backward. This algorithm can be used to implement basic automated vacuum cleaning behavior for the robot.
