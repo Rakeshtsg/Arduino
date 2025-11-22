@@ -1,0 +1,88 @@
+// Import the required libraries
+#include <WiFi.h>
+#include <PubSubClient.h>
+
+// Replace these with your WiFi credentials
+const char *ssid = "your_wifi_ssid";
+const char *password = "your_wifi_password";
+
+// Replace this with your IoT device's MQTT broker address
+const char *mqtt_server = "your_mqtt_broker_address";
+
+// Initialize the WiFi and MQTT clients
+WiFiClient wifiClient;
+PubSubClient mqttClient(wifiClient);
+
+// This function is called when the device connects to the WiFi
+void wifiConnected()
+{
+  // Print a message
+  Serial.println("Connected to WiFi");
+
+  // Connect to the MQTT broker
+  mqttClient.connect("arduino_client");
+
+  // Subscribe to a topic
+  mqttClient.subscribe("your_topic");
+}
+
+// This function is called when the device receives an MQTT message
+void mqttReceived(char *topic, byte *payload, unsigned int length)
+{
+  // Print the received message
+  Serial.println("Message received");
+
+  // Check the topic of the message
+  if (strcmp(topic, "your_topic") == 0)
+  {
+    // Convert the payload to a string
+    char message[length + 1];
+    memcpy(message, payload, length);
+    message[length] = '\0';
+
+    // Print the message
+    Serial.println(message);
+
+    // Check the message and control the IoT device accordingly
+    if (strcmp(message, "on") == 0)
+    {
+      // Turn the device on
+      // ...
+    }
+    else if (strcmp(message, "off") == 0)
+    {
+      // Turn the device off
+      // ...
+    }
+  }
+}
+
+void setup()
+{
+  // Initialize the serial port
+  Serial.begin(115200);
+
+  // Connect to the WiFi
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    delay(500);
+    Serial.print(".");
+  }
+  wifiConnected();
+
+  // Set the callback functions
+  mqttClient.setCallback(mqttReceived);
+}
+
+void loop()
+{
+  // Check if the device is connected to the WiFi
+  if (!mqttClient.connected())
+  {
+    wifiConnected();
+  }
+
+  // Process incoming messages
+  mqttClient.loop();
+}
