@@ -1,0 +1,27 @@
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+// Set up the LCD display using the LiquidCrystal_I2C library
+LiquidCrystal_I2C lcd(0x3F, 16, 2);  // Set the I2C address and dimensions of the display
+
+void setup() {
+  // Initialize the display and turn on the backlight
+  lcd.init();
+  lcd.backlight();
+}
+
+void loop() {
+  // Clear the display
+  lcd.clear();
+
+  // Display a special message on the first line of the display
+  lcd.setCursor(0, 0);
+  lcd.print("Happy New Year!");
+
+  // Display a second message on the second line of the display
+  lcd.setCursor(0, 1);
+  lcd.print("Wishing you a great 2022!");
+
+  // Wait 5 seconds before displaying the next message
+  delay(5000);
+}

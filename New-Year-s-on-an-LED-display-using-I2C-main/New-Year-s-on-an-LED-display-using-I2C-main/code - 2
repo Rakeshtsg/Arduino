@@ -1,0 +1,61 @@
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+// Set up the LCD display using the LiquidCrystal_I2C library
+LiquidCrystal_I2C lcd(0x3F, 16, 2);  // Set the I2C address and dimensions of the display
+
+// Declare variables for the display messages and scrolling
+String messages[] = {
+  "Happy New Year!",
+  "Wishing you a great 2021!"
+};
+int messageCount = 2;  // Number of messages in the array
+int messageIndex = 0;  // Current message being displayed
+int scrollDelay = 200;  // Delay between scrolls, in milliseconds
+
+void setup() {
+  // Initialize the display and turn on the backlight
+  lcd.init();
+  lcd.backlight();
+
+  // Set the display to use a custom character for the heart symbol
+  byte heart[8] = {
+    B00000,
+    B01010,
+    B11111,
+    B11111,
+    B11111,
+    B01110,
+    B00100,
+    B00000
+  };
+  lcd.createChar(0, heart);
+}
+
+void loop() {
+  // Clear the display
+  lcd.clear();
+
+  // Display the current message on the first line of the display
+  lcd.setCursor(0, 0);
+  lcd.print(messages[messageIndex]);
+
+  // Display a heart symbol on the second line of the display
+  lcd.setCursor(0, 1);
+  lcd.write(byte(0));
+
+  // Scroll the message if necessary
+  int messageLength = messages[messageIndex].length();
+  if (messageLength > 16) {
+    for (int i = 0; i < messageLength - 16; i++) {
+      lcd.scrollDisplayLeft();
+      delay(scrollDelay);
+    }
+  }
+
+  // Wait 5 seconds before displaying the next message
+  delay(5000);
+
+  // Move to the next message in the array
+  messageIndex = (messageIndex + 1) % messageCount;
+}

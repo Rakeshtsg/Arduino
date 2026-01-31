@@ -1,0 +1,111 @@
+#include <DHT.h> // include the DHT library
+#include <SD.h> // include the SD library
+#include <SPI.h> // include the SPI library
+#include <Wire.h> // include the Wire library
+#include <WiFi.h> // include the WiFi library
+#include <Adafruit_GFX.h> // include the Adafruit GFX library
+#include <Adafruit_SSD1306.h> // include the Adafruit SSD1306 library
+
+#define DHTPIN 2 // define the pin that the sensor is connected to
+#define DHTTYPE DHT11 // define the type of sensor (DHT11 in this case)
+#define SCREEN_WIDTH 128 // define the width of the screen
+#define SCREEN_HEIGHT 64 // define the height of the screen
+#define OLED_RESET 4 // define the reset pin for the OLED screen
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET); // create an OLED display object
+DHT dht(DHTPIN, DHTTYPE); // create a DHT object
+
+const char* ssid = "YOUR_WIFI_SSID"; // replace with your WiFi SSID
+const char* password = "YOUR_WIFI_PASSWORD"; // replace with your WiFi password
+const char* server = "api.thingspeak.com"; // the Thingspeak server address
+
+File myFile; // create a file object
+
+void setup() {
+  Serial.begin(9600); // start the serial monitor
+  dht.begin(); // start the DHT sensor
+
+  // initialize the OLED display
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C); // initialize the OLED display
+  display.clearDisplay(); // clear the display
+  display.setTextSize(1); // set the text size
+  display.setTextColor(WHITE); // set the text color
+  display.setCursor(0,0); // set the cursor position
+
+  // initialize the SD card
+  if (!SD.begin(4)) { // if the SD card fails to initialize
+    Serial.println("SD card initialization failed!"); // print an error message
+    return; // exit the setup function
+  }
+  Serial.println("SD card initialized."); // print a success message
+
+  // connect to the WiFi network
+  WiFi.begin(ssid, password); // start the WiFi connection
+  while (WiFi.status() != WL_CONNECTED) { // while the WiFi connection is not established
+    delay(500); // wait half a second
+    Serial.print("."); // print a dot to indicate that the connection is still being established
+  }
+  Serial.println(); // add a newline
+  Serial.print("Connected to WiFi network with IP address: "); // print a message
+  Serial.println(WiFi.localIP()); // print the IP address
+}
+
+void loop() {
+  // read the temperature and humidity from the sensor
+  float temperature = dht.readTemperature();
+  float humidity = dht.readHumidity();
+  float Celsius = dht.readC();
+ }
+  // print the temperature and humidity to the serial monitor
+  Serial.print("Temperature: ");
+  Serial.print(temperature);
+  Serial.println("°C");
+  Serial.print("Humidity: ");
+  Serial.print(humidity);
+  Serial.println("%");
+  
+  // display the temperature and humidity on the OLED screen
+  display.clearDisplay(); // clear the display
+  display.setCursor(0,0); // set the cursor position
+  display.print("Temperature: "); // print a label
+  display.print(temperature); // print the temperature value
+  display.println("°C"); // add a degree symbol and "C" for Celsius
+  display.print("Humidity: "); // print a label
+  display.print(humidity); // print the humidity value
+  display.println("%"); // add a percent symbol
+  display.display(); // update the display
+
+  // store the temperature and humidity data in a file on the SD card
+  myFile = SD.open("weather.txt", FILE_WRITE); // open the file in write mode
+  if (myFile) { // if the file is open
+    myFile.print(temperature); // print the temperature value to the file
+    myFile.print(","); // add a comma
+    myFile.print(humidity); // print the humidity value to the file
+    myFile.println(); // add a newline
+    myFile.close(); // close the file
+  } else { // if the file is not open
+    Serial.println("Error opening file!"); // print an error message
+  }
+
+  // send the temperature and humidity data to Thingspeak
+  WiFiClient client; // create a WiFi client object
+  if (client.connect(server, 80)) { // if the client is able to connect to the server
+    String postStr = "field1="; // create a string with the data to be posted
+    postStr += String(temperature); // add the temperature value
+    postStr += "&field2="; // add a field separator
+    postStr += String(humidity); // add the humidity value
+    postStr += "\r\n\r\n"; // add the required end of line characters
+    client.print("POST /update HTTP/1.1\n"); // send a POST request
+    client.print("Host: api.thingspeak.com\n"); // specify the server host
+    client.print("Connection: close\n"); // close the connection after the request is complete
+    client.print("X-THINGSPEAKAPIKEY: YOUR_API_KEY\n"); // add your Thingspeak API key
+    client.print("Content-Type: application/x-www-form-urlencoded\n"); // set the content type
+    client.print("Content-Length: "); // specify the content length
+    client.print(postStr.length()); // add the length of the data string
+    client.print("\n\n"); // add the required end of line characters
+    client.print(postStr); // send the data string
+  }
+  client.stop(); // close the client connection
+
+  // wait a few minutes before taking another reading
+  delay(60000);
+}
